@@ -61,15 +61,26 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < PARTICLE_COUNT; i++) {
             
+            particles[i].vy += 0.15f;
+            
             particles[i].x += particles[i].vx;
             particles[i].y += particles[i].vy;
 
-            SDL_Rect r;
-            r.x = (int)particles[i].x;
-            r.y = (int)particles[i].y;
-            r.w = particles[i].size;
-            r.h = particles[i].size;
+            if(particles[i].y + particles[i].size >= SCREEN_HEIGHT) {
+                particles[i].y = SCREEN_HEIGHT - particles[i].size;
+                particles[i].vy *= -0.8f;
+            }
 
+            if (particles[i].x <= 0 || particles[i].x + particles[i].size >= SCREEN_WIDTH) {
+                particles[i].vx *= -1;
+            }   
+
+            SDL_Rect r = {
+                (int)particles[i].x,
+                (int)particles[i].y,
+                particles[i].size,
+                particles[i].size
+            };
             SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
             SDL_RenderFillRect(renderer, &r);
         }
