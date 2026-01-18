@@ -11,6 +11,7 @@ typedef struct {
     float x, y;
     float vx, vy;
     int size;
+    SDL_Color color;
 } Particle;
 
 
@@ -41,6 +42,21 @@ void init_particles() {
         particles[i].vy = (float)(rand() % 401 - 200) / 100.f;
 
         particles[i].size = 5;
+
+        particles[i].color.r = 128 + rand() % 128;
+        particles[i].color.g = 128 + rand() % 128;
+        particles[i].color.b = 128 + rand() % 128;
+        particles[i].color.a = 255;
+    }
+}
+
+void apply_attraction(int mX, int mY) {
+    for (int i = 0; i < PARTICLE_COUNT; i++) {
+        float dx = mX - particles[i].x;
+        float dy = mY - particles[i].y;
+        
+        particles[i].vx += dx * 0.005f;
+        particles[i].vy += dy * 0.005f;
     }
 }
 
@@ -54,6 +70,13 @@ int main(int argc, char* argv[]) {
     while (running) {
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) running = 0;
+            
+            int mouseX, mouseY;
+            Uint32 mouseButtons = SDL_GetMouseState(&mouseX, &mouseY);
+
+            if (mouseButtons & SDL_BUTTON(SDL_BUTTON_LEFT)) {
+                apply_attraction(mouseX, mouseY);
+            }
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black background
@@ -61,10 +84,15 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < PARTICLE_COUNT; i++) {
             
+
             particles[i].vy += 0.15f;
-            
+
+            particles[i].vx *= 0.99f;
+            particles[i].vy *= 0.99f;
+
             particles[i].x += particles[i].vx;
             particles[i].y += particles[i].vy;
+
 
             if(particles[i].y + particles[i].size >= SCREEN_HEIGHT) {
                 particles[i].y = SCREEN_HEIGHT - particles[i].size;
@@ -81,7 +109,14 @@ int main(int argc, char* argv[]) {
                 particles[i].size,
                 particles[i].size
             };
-            SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+            SDL_SetRenderDrawColor(
+                renderer,
+                particles[i].color.r, 
+                particles[i].color.g, 
+                particles[i].color.b, 
+                particles[i].color.a 
+            );
+
             SDL_RenderFillRect(renderer, &r);
         }
 
